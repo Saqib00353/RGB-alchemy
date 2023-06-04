@@ -1,129 +1,99 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import uniqid from 'uniqid';
-import axios from 'axios';
-import { calculateDifference } from '../utilities/calculateDifference';
-import { getTargetSquaresForColumns, getTargetSquaresForRows } from '../utilities/targetSquares';
-import { getColorValue } from '../utilities/colorValue';
-import { bottomAndRightBgColor, topAndLeftBgColor } from '../utilities/bgColor';
-import { updateDifferenceState } from '../utilities/difference';
-import { box, InitialState, Payload, RGB } from '../../interfaces/types';
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { calculateColorDifference } from "../utilities/calculateColorDifference";
+import { getIndex } from "../utilities";
+import { bottomRightFormula, getBgColor, mixColor, topLeftFormula } from "../utilities/bgColor";
+import { updateDifferenceState } from "../utilities/difference";
+import { InitialState, Payload, RGB } from "../../interfaces/types";
+import uniqid from "uniqid";
+import axios from "axios";
 
-export const getData = createAsyncThunk('boxes', async (url: string) => {
+export const getData = createAsyncThunk("boxes", async (url: string) => {
   try {
-    const response = await axios.get(url);
-    response.data.height += 2;
-    response.data.width += 2;
+    // const response = await axios.get(url);
+    const response = {
+      data: {
+        height: 10,
+        width: 10,
+        target: [255, 78, 190] as RGB,
+        maxMoves: 10,
+      },
+    };
 
-    const getBox = (): box => ({
-      id: uniqid(),
-      bgColor: 'rgb(0,0,0)',
-      difference: 100,
-      redOutline: false,
-    });
+    const { data } = response;
 
-    const arr = new Array(response.data.height);
-    for (let i = 0; i < response.data.height; i++) {
-      arr[i] = new Array(response.data.width);
-    }
-    for (let i = 0; i < response.data.height; i++) {
-      for (let j = 0; j < response.data.width; j++) {
-        arr[i][j] = getBox();
-      }
-    }
+    data.height += 2;
+    data.width += 2;
+
+    const twoDimensionalArray = Array(data.height)
+      .fill(null)
+      .map((_) =>
+        Array(data.width)
+          .fill(null)
+          .map((_) => ({
+            id: uniqid(),
+            bgColor: "rgb(0,0,0)",
+            difference: 100,
+            redOutline: false,
+          }))
+      );
 
     return {
-      data: response.data,
-      twoDimensionalArray: arr,
-      difference: calculateDifference(response.data.target, [0, 0, 0]),
-      movesLeft: response.data.maxMoves,
-      closestColor: 'rgb(0,0,0)',
+      data,
+      twoDimensionalArray,
+      difference: calculateColorDifference({ target: data.target, squareColor: "rgb(0,0,0)" }),
+      movesLeft: data.maxMoves,
+      closestColor: "rgb(0,0,0)",
     };
   } catch (error) {
     console.error(error);
   }
 });
 
-const responseObject = {
-  userId: '',
-  width: 0,
-  height: 0,
-  maxMoves: 0,
-  target: [0, 0, 0] as RGB,
-};
-
 const initialState: InitialState = {
-  data: responseObject,
+  data: {
+    userId: "",
+    width: 0,
+    height: 0,
+    maxMoves: 0,
+    target: [0, 0, 0] as RGB,
+  },
   twoDimensionalArray: [],
   difference: 0,
   movesLeft: -1,
-  closestColor: '',
+  closestColor: "",
 };
 
 const boxesSlice = createSlice({
-  name: 'boxes',
+  name: "boxes",
   initialState,
   reducers: {
     spreadColorFromTop: (state, { payload }: PayloadAction<Payload>) => {
-      state.movesLeft -= 1;
-      const targetSqaures = getTargetSquaresForRows(state.twoDimensionalArray, state.data.height, state.data.width, payload.item.id);
-
-      for (let i = 0; i < targetSqaures.length - 1; i++) {
-        state.twoDimensionalArray = state.twoDimensionalArray.map((arr) =>
-          arr.map((e) => {
-            if (e.id === targetSqaures[i].id) {
-              const previousColor = getColorValue(e.bgColor);
-              const bgColor = topAndLeftBgColor(
-                getColorValue(payload.color),
-                state.movesLeft,
-                state.data.maxMoves,
-                state.data.height,
-                i,
-                previousColor
-              );
-              return {
-                ...e,
-                bgColor,
-                difference: calculateDifference(state.data.target, getColorValue(bgColor)),
-              };
-            }
-            return { ...e, difference: calculateDifference(state.data.target, getColorValue(e.bgColor)) };
-          })
-        );
-      }
-
-      const { updatedArray, closestColorSquare } = updateDifferenceState(state.twoDimensionalArray, state.data.height, state.data.width);
-      state.twoDimensionalArray = updatedArray;
-      state.difference = closestColorSquare.difference;
-      state.closestColor = closestColorSquare.bgColor;
-    },
-
-    spreadColorFromBottom: (state, { payload }: PayloadAction<Payload>) => {
       state.movesLeft--;
-      const targetSqaures = getTargetSquaresForRows(state.twoDimensionalArray, state.data.height, state.data.width, payload.item.id);
+      const targetIndex = getIndex({ arr: state.twoDimensionalArray, targetColorId: payload.item.id });
+      const targetSqaures = state.twoDimensionalArray.flatMap((item, idx) => (idx !== state.twoDimensionalArray.length - 1 ? item[targetIndex] : []));
 
-      for (let i = targetSqaures.length - 1; i > 0; i--) {
+      targetSqaures.forEach((square, idx) => {
         state.twoDimensionalArray = state.twoDimensionalArray.map((arr) =>
           arr.map((e) => {
-            const previousColor = getColorValue(e.bgColor);
-            if (e.id === targetSqaures[i].id) {
-              const bgColor = bottomAndRightBgColor(
-                getColorValue(payload.color),
-                state.movesLeft,
-                state.data.maxMoves,
-                state.data.height,
-                i,
-                previousColor
-              );
+            if (e.id === square.id) {
+              const bgColor = mixColor({
+                bgColor: getBgColor({ color: payload.item.bgColor, movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
+                height: state.data.height,
+                distance: idx,
+                previousColor: e.bgColor,
+                formula: topLeftFormula,
+              });
+
               return {
                 ...e,
                 bgColor,
-                difference: calculateDifference(state.data.target, getColorValue(bgColor)),
+                difference: calculateColorDifference({ target: state.data.target, squareColor: e.bgColor }),
               };
             }
-            return { ...e, difference: calculateDifference(state.data.target, previousColor) };
+            return { ...e, difference: calculateColorDifference({ target: state.data.target, squareColor: e.bgColor }) };
           })
         );
-      }
+      });
 
       const { updatedArray, closestColorSquare } = updateDifferenceState(state.twoDimensionalArray, state.data.height, state.data.width);
       state.twoDimensionalArray = updatedArray;
@@ -133,31 +103,64 @@ const boxesSlice = createSlice({
 
     spreadColorFromLeft: (state, { payload }: PayloadAction<Payload>) => {
       state.movesLeft--;
-      const targetSqaures = getTargetSquaresForColumns(state.twoDimensionalArray, state.data.width, payload.rowNumber);
+      const targetSqaures = state.twoDimensionalArray[payload.rowNumber - 1].slice(0, state.twoDimensionalArray.length - 1);
 
-      for (let i = 0; i < targetSqaures.length - 1; i++) {
+      targetSqaures.forEach((square, idx) => {
         state.twoDimensionalArray = state.twoDimensionalArray.map((arr) =>
           arr.map((e) => {
-            if (e.id === targetSqaures[i].id) {
-              const previousColor = getColorValue(e.bgColor);
-              const bgColor = topAndLeftBgColor(
-                getColorValue(payload.color),
-                state.movesLeft,
-                state.data.maxMoves,
-                state.data.width,
-                i,
-                previousColor
-              );
+            if (e.id === square.id) {
+              const bgColor = mixColor({
+                bgColor: getBgColor({ color: payload.item.bgColor, movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
+                height: state.data.width,
+                distance: idx,
+                previousColor: e.bgColor,
+                formula: topLeftFormula,
+              });
+
               return {
                 ...e,
                 bgColor,
-                difference: calculateDifference(state.data.target, getColorValue(bgColor)),
+                difference: calculateColorDifference({ target: state.data.target, squareColor: bgColor }),
               };
             }
-            return { ...e, difference: calculateDifference(state.data.target, getColorValue(e.bgColor)) };
+            return { ...e, difference: calculateColorDifference({ target: state.data.target, squareColor: e.bgColor }) };
           })
         );
-      }
+      });
+
+      const { updatedArray, closestColorSquare } = updateDifferenceState(state.twoDimensionalArray, state.data.height, state.data.width);
+      state.twoDimensionalArray = updatedArray;
+      state.difference = closestColorSquare.difference;
+      state.closestColor = closestColorSquare.bgColor;
+    },
+
+    spreadColorFromBottom: (state, { payload }: PayloadAction<Payload>) => {
+      state.movesLeft--;
+      const targetIndex = getIndex({ arr: state.twoDimensionalArray, targetColorId: payload.item.id });
+      const targetSqaures = state.twoDimensionalArray.map((item) => item[targetIndex]).slice(1);
+
+      targetSqaures.forEach((square, idx) => {
+        state.twoDimensionalArray = state.twoDimensionalArray.map((arr) =>
+          arr.map((e) => {
+            if (e.id === square.id) {
+              const bgColor = mixColor({
+                bgColor: getBgColor({ color: payload.item.bgColor, movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
+                height: state.data.height,
+                distance: targetSqaures.length - idx,
+                previousColor: e.bgColor,
+                formula: topLeftFormula,
+              });
+
+              return {
+                ...e,
+                bgColor,
+                difference: calculateColorDifference({ target: state.data.target, squareColor: e.bgColor }),
+              };
+            }
+            return { ...e, difference: calculateColorDifference({ target: state.data.target, squareColor: e.bgColor }) };
+          })
+        );
+      });
 
       const { updatedArray, closestColorSquare } = updateDifferenceState(state.twoDimensionalArray, state.data.height, state.data.width);
       state.twoDimensionalArray = updatedArray;
@@ -167,31 +170,32 @@ const boxesSlice = createSlice({
 
     spreadColorFromRight: (state, { payload }: PayloadAction<Payload>) => {
       state.movesLeft--;
-      const targetSqaures = getTargetSquaresForColumns(state.twoDimensionalArray, state.data.width, payload.rowNumber);
+      const targetSqaures = state.twoDimensionalArray[payload.rowNumber - 1].slice(1);
 
-      for (let i = targetSqaures.length - 1; i > 0; i--) {
+      console.log(JSON.parse(JSON.stringify(targetSqaures)));
+
+      targetSqaures.forEach((square, idx) => {
         state.twoDimensionalArray = state.twoDimensionalArray.map((arr) =>
           arr.map((e) => {
-            if (e.id === targetSqaures[i].id) {
-              const previousColor = getColorValue(e.bgColor);
-              const bgColor = bottomAndRightBgColor(
-                getColorValue(payload.color),
-                state.movesLeft,
-                state.data.maxMoves,
-                state.data.width,
-                i,
-                previousColor
-              );
+            if (e.id === square.id) {
+              const bgColor = mixColor({
+                bgColor: getBgColor({ color: payload.item.bgColor, movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
+                height: state.data.width,
+                distance: idx,
+                previousColor: e.bgColor,
+                formula: bottomRightFormula,
+              });
+
               return {
                 ...e,
                 bgColor,
-                difference: calculateDifference(state.data.target, getColorValue(bgColor)),
+                difference: calculateColorDifference({ target: state.data.target, squareColor: bgColor }),
               };
             }
-            return { ...e, difference: calculateDifference(state.data.target, getColorValue(e.bgColor)) };
+            return { ...e, difference: calculateColorDifference({ target: state.data.target, squareColor: e.bgColor }) };
           })
         );
-      }
+      });
 
       const { updatedArray, closestColorSquare } = updateDifferenceState(state.twoDimensionalArray, state.data.height, state.data.width);
       state.twoDimensionalArray = updatedArray;

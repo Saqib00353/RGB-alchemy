@@ -1,5 +1,5 @@
-import { box } from '../interfaces/types';
-import SquareBox from './SquareBox';
+import { box } from "../interfaces/types";
+import SquareBox from "./SquareBox";
 
 type RowsProps = {
   rowNumber: number;

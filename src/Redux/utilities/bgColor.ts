@@ -1,33 +1,68 @@
-import { RGB } from '../../interfaces/types';
+import { getColorValue } from "./colorValue";
+import { RGB } from "../../interfaces/types";
 
-const topAndLeftBgColor = (color: RGB, move: number, maxMoves: number, height: number, distance: number, [red, green, blue]: RGB): string => {
-  if (maxMoves - 3 > move && color[0] === 0 && color[1] === 0 && color[2] === 0) return 'rgb(0,0,0)';
-
-  const mixedRedColor = ((height + 1 - distance) * (move === maxMoves - 1 ? 255 : color[0])) / (height + 1) + red;
-  const mixedGreenColor = ((height + 1 - distance) * (move === maxMoves - 2 ? 255 : color[1])) / (height + 1) + green;
-  const mixedBlueColor = ((height + 1 - distance) * (move === maxMoves - 3 ? 255 : color[2])) / (height + 1) + blue;
-  const normalizationFactor = 255 / Math.max(mixedRedColor, mixedGreenColor, mixedBlueColor, 255);
-
-  const redColor = mixedRedColor * normalizationFactor;
-  const greenColor = mixedGreenColor * normalizationFactor;
-  const blueColor = mixedBlueColor * normalizationFactor;
-
-  return `rgb(${redColor},${greenColor},${blueColor})`;
+type backgroudColor = {
+  bgColor: string;
+  height: number;
+  distance: number;
+  previousColor: string;
+  formula: Function;
 };
 
-const bottomAndRightBgColor = (color: RGB, move: number, maxMoves: number, height: number, distance: number, [red, green, blue]: RGB): string => {
-  if (maxMoves - 3 > move && color[0] === 0 && color[1] === 0 && color[2] === 0) return 'rgb(0,0,0)';
-
-  const mixedRedColor = ((move === maxMoves - 1 ? 255 : color[0]) * (height - (height - distance - 2))) / (height + 1) + red;
-  const mixedGreenColor = ((move === maxMoves - 2 ? 255 : color[1]) * (height - (height - distance - 2))) / (height + 1) + green;
-  const mixedBlueColor = ((move === maxMoves - 3 ? 255 : color[2]) * (height - (height - distance - 2))) / (height + 1) + blue;
-  const normalizationFactor = 255 / Math.max(mixedRedColor, mixedGreenColor, mixedBlueColor, 255);
-
-  const redColor = mixedRedColor * normalizationFactor;
-  const greenColor = mixedGreenColor * normalizationFactor;
-  const blueColor = mixedBlueColor * normalizationFactor;
-
-  return `rgb(${redColor},${greenColor},${blueColor})`;
+type getBgColorProps = {
+  color: string;
+  movesleft: number;
+  maxMoves: number;
 };
 
-export { topAndLeftBgColor, bottomAndRightBgColor };
+type formulaProps = {
+  height: number;
+  distance: number;
+  currentColor: RGB;
+  lastColor: RGB;
+};
+
+const mixColor = ({ bgColor, height, distance, previousColor, formula }: backgroudColor) => {
+  if (!bgColor) return "rgb(0,0,0)";
+  const currentColor = getColorValue(bgColor);
+  const lastColor = getColorValue(previousColor);
+  const mixedColor = formula({ height, distance, currentColor, lastColor });
+  const normalizationFactor = 255 / Math.max(...mixedColor, 255);
+  const color = `rgb(${mixedColor[0] * normalizationFactor},${mixedColor[1] * normalizationFactor},${mixedColor[2] * normalizationFactor})`;
+
+  return color;
+};
+
+function getBgColor({ color, movesleft, maxMoves }: getBgColorProps) {
+  return movesleft === maxMoves - 1
+    ? "rgb(255,0,0)"
+    : movesleft === maxMoves - 2
+    ? "rgb(0,255,0)"
+    : movesleft === maxMoves - 3
+    ? "rgb(0,0,255)"
+    : color;
+}
+
+function topLeftFormula({ height, distance, currentColor, lastColor }: formulaProps) {
+  const [currRed, currGreen, currBlue] = currentColor;
+  const [prevRed, prevGreen, prevBlue] = lastColor;
+
+  const mixedRedColor = ((height + 1 - distance) * currRed) / (height + 1) + prevRed;
+  const mixedGreenColor = ((height + 1 - distance) * currGreen) / (height + 1) + prevGreen;
+  const mixedBlueColor = ((height + 1 - distance) * currBlue) / (height + 1) + prevBlue;
+
+  return [mixedRedColor, mixedGreenColor, mixedBlueColor];
+}
+
+function bottomRightFormula({ height, distance, currentColor, lastColor }: formulaProps) {
+  const [currRed, currGreen, currBlue] = currentColor;
+  const [prevRed, prevGreen, prevBlue] = lastColor;
+
+  const mixedRedColor = (currRed * (height - (height - distance - 2))) / (height + 1) + prevRed;
+  const mixedGreenColor = (currGreen * (height - (height - distance - 2))) / (height + 1) + prevGreen;
+  const mixedBlueColor = (currBlue * (height - (height - distance - 2))) / (height + 1) + prevBlue;
+
+  return [mixedRedColor, mixedGreenColor, mixedBlueColor];
+}
+
+export { mixColor, getBgColor, topLeftFormula, bottomRightFormula };
