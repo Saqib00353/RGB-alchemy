@@ -1,11 +1,9 @@
 import { GiTriangleTarget } from "react-icons/gi";
-import { useAppSelector } from "../Redux/hooks/useApp";
+import { useAppSelector } from "../store/hooks/useApp";
 
 function UserDetails() {
   const { data, difference, movesLeft, closestColor } = useAppSelector((state) => state.boxes);
-  const red = data.target[0];
-  const green = data.target[1];
-  const blue = data.target[2];
+  const [red, green, blue] = data.target;
 
   return (
     <>
@@ -14,7 +12,7 @@ function UserDetails() {
       <div>Moves left: {movesLeft}</div>
       <div className="target-and-closest-color">
         Target Color
-        <span className="color" style={{ background: data.target ? `rgb(${red},${green},${blue})` : "black" }} />
+        <span className="color" style={{ background: `rgb(${red ?? 0},${green ?? 0},${blue ?? 0})` }} />
       </div>
       <div className="target-and-closest-color">
         Closest Color

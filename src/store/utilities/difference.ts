@@ -1,10 +1,10 @@
-import { box } from '../../interfaces/types';
+import { box } from "../../interfaces/types";
 
 const getClosestColorSquare = (arr: box[][], height: number, width: number): box => {
   const differences = [];
   let closestColorSquare: box = {
-    id: '',
-    bgColor: '',
+    id: "",
+    bgColor: "",
     difference: 100,
     redOutline: false,
   };

@@ -77,7 +77,7 @@ const boxesSlice = createSlice({
           arr.map((e) => {
             if (e.id === square.id) {
               const bgColor = mixColor({
-                bgColor: getBgColor({ color: payload.item.bgColor, movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
+                bgColor: getBgColor({ color: payload.color || "", movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
                 height: state.data.height,
                 distance: idx,
                 previousColor: e.bgColor,
@@ -110,7 +110,7 @@ const boxesSlice = createSlice({
           arr.map((e) => {
             if (e.id === square.id) {
               const bgColor = mixColor({
-                bgColor: getBgColor({ color: payload.item.bgColor, movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
+                bgColor: getBgColor({ color: payload.color || "", movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
                 height: state.data.width,
                 distance: idx,
                 previousColor: e.bgColor,
@@ -144,7 +144,7 @@ const boxesSlice = createSlice({
           arr.map((e) => {
             if (e.id === square.id) {
               const bgColor = mixColor({
-                bgColor: getBgColor({ color: payload.item.bgColor, movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
+                bgColor: getBgColor({ color: payload.color || "", movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
                 height: state.data.height,
                 distance: targetSqaures.length - idx,
                 previousColor: e.bgColor,
@@ -179,7 +179,7 @@ const boxesSlice = createSlice({
           arr.map((e) => {
             if (e.id === square.id) {
               const bgColor = mixColor({
-                bgColor: getBgColor({ color: payload.item.bgColor, movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
+                bgColor: getBgColor({ color: payload.color || "", movesleft: state.movesLeft, maxMoves: state.data.maxMoves }),
                 height: state.data.width,
                 distance: idx,
                 previousColor: e.bgColor,
