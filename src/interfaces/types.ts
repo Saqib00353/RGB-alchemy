@@ -1,4 +1,4 @@
-type box = {
+type square = {
   id: string;
   bgColor: string;
   difference: number;
@@ -17,21 +17,21 @@ type Response = {
 
 type InitialState = {
   data: Response;
-  twoDimensionalArray: box[][];
+  twoDimensionalArray: square[][];
   difference: number;
   movesLeft: number;
   closestColor: string;
 };
 
 type Payload = {
-  item: box;
+  item: square;
   rowNumber: number;
   color?: string;
 };
 
 type SquareBoxProps = {
   rowNumber: number;
-  item: box;
+  item: square;
   columnNumber: number;
 };
-export type { box, RGB, InitialState, Payload, SquareBoxProps };
+export type { square, RGB, InitialState, Payload, SquareBoxProps };

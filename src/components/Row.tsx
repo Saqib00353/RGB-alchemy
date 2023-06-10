@@ -1,9 +1,9 @@
-import { box } from "../interfaces/types";
+import { square } from "../interfaces/types";
 import Column from "./Column";
 
 type RowsProps = {
   rowNumber: number;
-  arr: box[];
+  arr: square[];
 };
 
 function Row({ arr, rowNumber }: RowsProps) {

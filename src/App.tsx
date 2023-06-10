@@ -1,4 +1,3 @@
-import { box } from "./interfaces/types";
 import UserDetails from "./components/UserDetails";
 import Row from "./components/Row";
 import useFetch from "./store/hooks/useFetch";
@@ -12,7 +11,7 @@ function App() {
       <UserDetails />
       <div style={{ display: "grid" }}>
         {data &&
-          twoDimensionalArray.map((arr: box[]) => {
+          twoDimensionalArray.map((arr) => {
             rowCounter++;
             return <Row key={rowCounter} rowNumber={rowCounter} arr={arr} />;
           })}

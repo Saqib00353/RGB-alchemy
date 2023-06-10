@@ -15,15 +15,18 @@ function Column({ rowNumber, item, columnNumber }: SquareBoxProps) {
   function allowDrop(event: { preventDefault: () => void }) {
     event.preventDefault();
   }
+
   function drag(event: { dataTransfer: { setData: (arg0: string, arg1: string) => void } }) {
     event.dataTransfer.setData("color", item.bgColor);
   }
+
   function handleDrop(colorSpreader: Function) {
     return (event: React.DragEvent<HTMLSpanElement>) => {
       const color = event.dataTransfer.getData("color");
       dispatch(colorSpreader({ color, rowNumber, item }));
     };
   }
+
   function handleClick(colorSpreader: Function) {
     return () => {
       isMoves && dispatch(colorSpreader({ item, rowNumber }));
@@ -34,6 +37,7 @@ function Column({ rowNumber, item, columnNumber }: SquareBoxProps) {
     backgroundColor: item.bgColor,
     cursor: isMoves ? "pointer" : "default",
   };
+
   const tilesTheme = {
     backgroundColor: item.bgColor,
     cursor: data.maxMoves - 2 > movesLeft ? "pointer" : "default",
@@ -52,35 +56,35 @@ function Column({ rowNumber, item, columnNumber }: SquareBoxProps) {
         <span className="white-box" />
       ) : rowNumber === 1 ? (
         <span
+          style={sourceTheme}
+          className="sources"
           onClick={handleClick(spreadColorFromTop)}
           onDrop={handleDrop(spreadColorFromTop)}
           onDragOver={allowDrop}
-          className="sources"
-          style={sourceTheme}
         />
       ) : columnNumber === 1 ? (
         <span
+          style={sourceTheme}
+          className="sources"
           onClick={handleClick(spreadColorFromLeft)}
           onDrop={handleDrop(spreadColorFromLeft)}
           onDragOver={allowDrop}
-          className="sources"
-          style={sourceTheme}
         />
       ) : rowNumber === height ? (
         <span
+          style={sourceTheme}
+          className="sources"
           onClick={handleClick(spreadColorFromBottom)}
           onDrop={handleDrop(spreadColorFromBottom)}
           onDragOver={allowDrop}
-          className="sources"
-          style={sourceTheme}
         />
       ) : columnNumber === width ? (
         <span
+          style={sourceTheme}
+          className="sources"
           onClick={handleClick(spreadColorFromRight)}
           onDrop={handleDrop(spreadColorFromRight)}
           onDragOver={allowDrop}
-          className="sources"
-          style={sourceTheme}
         />
       ) : (
         <span draggable={!isMoves} onDragStart={drag} title={title} className="tiles" style={tilesTheme} />
