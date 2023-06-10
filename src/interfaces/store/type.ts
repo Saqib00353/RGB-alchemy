@@ -1,11 +1,4 @@
-type square = {
-  id: string;
-  bgColor: string;
-  difference: number;
-  redOutline: boolean;
-};
-
-type RGB = [number, number, number];
+import { RGB, square } from "../type";
 
 type Response = {
   userId: string;
@@ -29,9 +22,4 @@ type Payload = {
   color?: string;
 };
 
-type SquareBoxProps = {
-  rowNumber: number;
-  item: square;
-  columnNumber: number;
-};
-export type { square, RGB, InitialState, Payload, SquareBoxProps };
+export type { InitialState, Payload };

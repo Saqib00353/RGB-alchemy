@@ -1,4 +1,4 @@
-import { RGB } from "../../interfaces/types";
+import { RGB } from "../../interfaces/type";
 import { getColorValue } from "./colorValue";
 
 type calculateColorDifferenceProps = {

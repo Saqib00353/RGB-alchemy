@@ -1,4 +1,4 @@
-import { square } from "../interfaces/types";
+import { square } from "../interfaces/type";
 import Column from "./Column";
 
 type RowsProps = {

@@ -2,7 +2,7 @@ import { GiTriangleTarget } from "react-icons/gi";
 import { useAppSelector } from "../store/hooks/useApp";
 
 function UserDetails() {
-  const { data, difference, movesLeft, closestColor } = useAppSelector((state) => state.boxes);
+  const { data, difference, movesLeft, closestColor } = useAppSelector((state) => state.square);
   const [red, green, blue] = data.target;
 
   return (

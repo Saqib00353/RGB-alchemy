@@ -1,4 +1,4 @@
-import { RGB } from "../../interfaces/types";
+import { RGB } from "../../interfaces/type";
 
 const getColorValue = (colorStr = "rgb(0,0,0)"): RGB => {
   const color = colorStr.slice(4, colorStr.length - 1).split(",");

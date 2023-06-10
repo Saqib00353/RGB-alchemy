@@ -1,8 +1,19 @@
-import { square } from "../../interfaces/types";
+import { getIndexProps } from "../../interfaces/helpers/type";
+import { InitialState } from "../../interfaces/store/type";
+import { RGB, square } from "../../interfaces/type";
 
-type getIndexProps = {
-  arr: square[][];
-  targetColorId: string;
+const initialState: InitialState = {
+  data: {
+    userId: "",
+    width: 0,
+    height: 0,
+    maxMoves: 0,
+    target: [0, 0, 0] as RGB,
+  },
+  twoDimensionalArray: [],
+  difference: 0,
+  movesLeft: -1,
+  closestColor: "",
 };
 
 function getIndex({ arr, targetColorId }: getIndexProps) {
@@ -29,4 +40,4 @@ const getClosestColorSquare = (arr: square[][]) => {
   return { closestColor, minDifference };
 };
 
-export { getIndex, getClosestColorSquare };
+export { getIndex, getClosestColorSquare, initialState };

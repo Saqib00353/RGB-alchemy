@@ -1,93 +1,62 @@
 import { useAppSelector, useAppDispatch } from "../store/hooks/useApp";
-import { spreadColorFromTop, spreadColorFromBottom, spreadColorFromLeft, spreadColorFromRight } from "../store/features/boxesSlice";
+import { spreadColorFromTop, spreadColorFromBottom, spreadColorFromLeft, spreadColorFromRight } from "../store/features/squareSlice";
 import { getColorValue } from "../store/utilities/colorValue";
-import { SquareBoxProps } from "../interfaces/types";
+import { SquareProps } from "../interfaces/type";
+import { allowDrop, conditions, drag, handleClick, handleDrop, sourceTheme, tilesTheme } from "../utilities/column";
 
-function Column({ rowNumber, item, columnNumber }: SquareBoxProps) {
-  const { data, movesLeft } = useAppSelector((state) => state.boxes);
+function Column({ rowNumber, item, columnNumber }: SquareProps) {
+  const { data, movesLeft } = useAppSelector((state) => state.square);
   const dispatch = useAppDispatch();
 
-  const { height, width } = data;
+  const { height, width, maxMoves } = data;
   const [red, green, blue] = getColorValue(item.bgColor);
   const title = `${red.toFixed(0)},${green.toFixed(0)},${blue.toFixed(0)}`;
-  const isMoves = data.maxMoves - 3 < movesLeft;
-
-  function allowDrop(event: { preventDefault: () => void }) {
-    event.preventDefault();
-  }
-
-  function drag(event: { dataTransfer: { setData: (arg0: string, arg1: string) => void } }) {
-    event.dataTransfer.setData("color", item.bgColor);
-  }
-
-  function handleDrop(colorSpreader: Function) {
-    return (event: React.DragEvent<HTMLSpanElement>) => {
-      const color = event.dataTransfer.getData("color");
-      dispatch(colorSpreader({ color, rowNumber, item }));
-    };
-  }
-
-  function handleClick(colorSpreader: Function) {
-    return () => {
-      isMoves && dispatch(colorSpreader({ item, rowNumber }));
-    };
-  }
-
-  const sourceTheme = {
-    backgroundColor: item.bgColor,
-    cursor: isMoves ? "pointer" : "default",
-  };
-
-  const tilesTheme = {
-    backgroundColor: item.bgColor,
-    cursor: data.maxMoves - 2 > movesLeft ? "pointer" : "default",
-    outline: item.redOutline ? "2.3px solid #f00" : "1.5px solid #aaa",
-  };
+  const isMoves = maxMoves - 3 < movesLeft;
 
   return (
     <>
-      {rowNumber === 1 && columnNumber === 1 ? (
-        <span className="white-box" />
-      ) : rowNumber === height && columnNumber === 1 ? (
-        <span className="white-box" />
-      ) : rowNumber === 1 && columnNumber === width ? (
-        <span className="white-box" />
-      ) : rowNumber === height && columnNumber === width ? (
+      {conditions({ rowNumber, columnNumber, height, width }).some((i) => i) ? (
         <span className="white-box" />
       ) : rowNumber === 1 ? (
         <span
-          style={sourceTheme}
+          style={sourceTheme({ item, isMoves })}
           className="sources"
-          onClick={handleClick(spreadColorFromTop)}
-          onDrop={handleDrop(spreadColorFromTop)}
+          onClick={handleClick({ colorSpreader: spreadColorFromTop, dispatch, rowNumber, item, isMoves })}
+          onDrop={handleDrop({ colorSpreader: spreadColorFromTop, dispatch, rowNumber, item })}
           onDragOver={allowDrop}
         />
       ) : columnNumber === 1 ? (
         <span
-          style={sourceTheme}
+          style={sourceTheme({ item, isMoves })}
           className="sources"
-          onClick={handleClick(spreadColorFromLeft)}
-          onDrop={handleDrop(spreadColorFromLeft)}
+          onClick={handleClick({ colorSpreader: spreadColorFromLeft, dispatch, rowNumber, item, isMoves })}
+          onDrop={handleDrop({ colorSpreader: spreadColorFromLeft, dispatch, rowNumber, item })}
           onDragOver={allowDrop}
         />
       ) : rowNumber === height ? (
         <span
-          style={sourceTheme}
+          style={sourceTheme({ item, isMoves })}
           className="sources"
-          onClick={handleClick(spreadColorFromBottom)}
-          onDrop={handleDrop(spreadColorFromBottom)}
+          onClick={handleClick({ colorSpreader: spreadColorFromBottom, dispatch, rowNumber, item, isMoves })}
+          onDrop={handleDrop({ colorSpreader: spreadColorFromBottom, dispatch, rowNumber, item })}
           onDragOver={allowDrop}
         />
       ) : columnNumber === width ? (
         <span
-          style={sourceTheme}
+          style={sourceTheme({ item, isMoves })}
           className="sources"
-          onClick={handleClick(spreadColorFromRight)}
-          onDrop={handleDrop(spreadColorFromRight)}
+          onClick={handleClick({ colorSpreader: spreadColorFromRight, dispatch, rowNumber, item, isMoves })}
+          onDrop={handleDrop({ colorSpreader: spreadColorFromRight, dispatch, rowNumber, item })}
           onDragOver={allowDrop}
         />
       ) : (
-        <span draggable={!isMoves} onDragStart={drag} title={title} className="tiles" style={tilesTheme} />
+        <span
+          draggable={!isMoves}
+          onDragStart={(e) => drag(e, item.bgColor)}
+          title={title}
+          className="tiles"
+          style={tilesTheme({ item, maxMoves, movesLeft })}
+        />
       )}
     </>
   );

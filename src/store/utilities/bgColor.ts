@@ -1,26 +1,5 @@
+import { backgroudColor, formulaProps, getBgColorProps } from "../../interfaces/helpers/type";
 import { getColorValue } from "./colorValue";
-import { RGB } from "../../interfaces/types";
-
-type backgroudColor = {
-  bgColor: string;
-  height: number;
-  distance: number;
-  previousColor: string;
-  formula: Function;
-};
-
-type getBgColorProps = {
-  color: string;
-  movesleft: number;
-  maxMoves: number;
-};
-
-type formulaProps = {
-  height: number;
-  distance: number;
-  currentColor: RGB;
-  lastColor: RGB;
-};
 
 const mixColor = ({ bgColor, height, distance, previousColor, formula }: backgroudColor) => {
   if (!bgColor) return "rgb(0,0,0)";

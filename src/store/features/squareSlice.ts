@@ -1,69 +1,12 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { getData } from "../services";
 import { calculateColorDifference } from "../utilities/calculateColorDifference";
-import { getIndex } from "../utilities";
 import { bottomRightFormula, getBgColor, mixColor, topLeftFormula } from "../utilities/bgColor";
-import { getClosestColorSquare } from "../utilities";
-import { InitialState, Payload, RGB } from "../../interfaces/types";
-import uniqid from "uniqid";
+import { getIndex, initialState, getClosestColorSquare } from "../utilities";
+import { InitialState, Payload } from "../../interfaces/store/type";
 // import axios from "axios";
 
-export const getData = createAsyncThunk("boxes", async (url: string) => {
-  try {
-    // const response = await axios.get(url);
-    const response = {
-      data: {
-        height: 10,
-        width: 10,
-        target: [255, 78, 190] as RGB,
-        maxMoves: 10,
-      },
-    };
-
-    const { data } = response;
-
-    data.height += 2;
-    data.width += 2;
-
-    const twoDimensionalArray = Array(data.height)
-      .fill(null)
-      .map((_) =>
-        Array(data.width)
-          .fill(null)
-          .map((_) => ({
-            id: uniqid(),
-            bgColor: "rgb(0,0,0)",
-            difference: 100,
-            redOutline: false,
-          }))
-      );
-
-    return {
-      data,
-      twoDimensionalArray,
-      difference: calculateColorDifference({ target: data.target, squareColor: "rgb(0,0,0)" }),
-      movesLeft: data.maxMoves,
-      closestColor: "rgb(0,0,0)",
-    };
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-const initialState: InitialState = {
-  data: {
-    userId: "",
-    width: 0,
-    height: 0,
-    maxMoves: 0,
-    target: [0, 0, 0] as RGB,
-  },
-  twoDimensionalArray: [],
-  difference: 0,
-  movesLeft: -1,
-  closestColor: "",
-};
-
-const boxesSlice = createSlice({
+const squareSlice = createSlice({
   name: "boxes",
   initialState,
   reducers: {
@@ -96,7 +39,7 @@ const boxesSlice = createSlice({
         );
       });
 
-      boxesSlice.caseReducers.updateDifference(state);
+      squareSlice.caseReducers.updateDifference(state);
     },
 
     spreadColorFromLeft: (state, action: PayloadAction<Payload>) => {
@@ -127,7 +70,7 @@ const boxesSlice = createSlice({
         );
       });
 
-      boxesSlice.caseReducers.updateDifference(state);
+      squareSlice.caseReducers.updateDifference(state);
     },
 
     spreadColorFromBottom: (state, action: PayloadAction<Payload>) => {
@@ -159,7 +102,7 @@ const boxesSlice = createSlice({
         );
       });
 
-      boxesSlice.caseReducers.updateDifference(state);
+      squareSlice.caseReducers.updateDifference(state);
     },
 
     spreadColorFromRight: (state, action: PayloadAction<Payload>) => {
@@ -190,7 +133,7 @@ const boxesSlice = createSlice({
         );
       });
 
-      boxesSlice.caseReducers.updateDifference(state);
+      squareSlice.caseReducers.updateDifference(state);
     },
 
     updateDifference(state) {
@@ -203,7 +146,6 @@ const boxesSlice = createSlice({
     },
   },
   extraReducers: {
-    [getData.pending.toString()]: (state, { payload }) => {},
     [getData.fulfilled.toString()]: (state, { payload }: PayloadAction<InitialState>) => {
       state.data = payload.data;
       state.twoDimensionalArray = payload.twoDimensionalArray;
@@ -211,10 +153,9 @@ const boxesSlice = createSlice({
       state.movesLeft = payload.movesLeft;
       state.closestColor = payload.closestColor;
     },
-    [getData.rejected.toString()]: (state, { payload }) => {},
   },
 });
 
-export const { spreadColorFromTop, spreadColorFromBottom, spreadColorFromLeft, spreadColorFromRight } = boxesSlice.actions;
+export const { spreadColorFromTop, spreadColorFromBottom, spreadColorFromLeft, spreadColorFromRight } = squareSlice.actions;
 
-export default boxesSlice.reducer;
+export default squareSlice.reducer;

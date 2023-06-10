@@ -1,9 +1,9 @@
-import { configureStore } from '@reduxjs/toolkit';
-import boxesSlice from './features/boxesSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import square from "./features/squareSlice";
 
 export const store = configureStore({
   reducer: {
-    boxes: boxesSlice,
+    square: square,
   },
 });
 
